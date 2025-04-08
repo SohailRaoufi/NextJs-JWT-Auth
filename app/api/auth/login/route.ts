@@ -42,8 +42,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ token }, { status: HttpStatusCode.Ok });
   } catch (e) {
-    console.log(e);
-
     return handleApiError(e);
   }
 }
