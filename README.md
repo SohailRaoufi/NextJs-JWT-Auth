@@ -1,36 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# nextjs-jwt-auth
+
+A minimal example implementation of JWT authentication in Next.js 15 using the App Router, jose for JWT operations, and Prisma for database access.
+
+## Features
+
+- 🔒 JWT authentication using jose
+- 🚀 Works with Next.js 15 App Router
+- 💾 Prisma integration with accelerate extension
+- 🔑 Secure password hashing with argon2
+- ✅ Request validation with zod
+- 📝 TypeScript support
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm/yarn/pnpm
+- Docker (optional, for local database)
+
+### Installation
+
+1. Clone this repository
+
+```bash
+git clone https://github.com/SohailRaoufi/NextJs-JWT-Auth.git
+cd nextjs-jwt-auth
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Set up environment variables
+
+```bash
+cp .env.example .env
+```
+
+4. Start the database and run migrations
+
+```bash
+docker-compose up -d
+npx prisma migrate dev
+```
+
+5. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage Example
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Protected API Route
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```typescript
+// app/api/examples/user/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth } from '@/lib/auth';
 
-## Learn More
+export async function GET(req: NextRequest) {
+  return withAuth(req, async (req, user) => {
+    return NextResponse.json({
+      message: 'This is a protected endpoint',
+      user,
+    });
+  });
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Making Authenticated Requests
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```typescript
+// From your client code
+async function fetchProtectedData(token) {
+  const response = await fetch('/api/examples/user', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Key Dependencies
 
-## Deploy on Vercel
+```json
+{
+  "dependencies": {
+    "@prisma/extension-accelerate": "^1.3.0",
+    "argon2": "^0.41.1",
+    "jose": "^6.0.10",
+    "next": "15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "prisma": "^6.5.0",
+    "typescript": "^5"
+  }
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Security Recommendations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Store JWT secret in environment variables
+- Use HTTPS in production
+- Set appropriate token expiration times (short-lived tokens)
+- Consider implementing refresh tokens for longer sessions
+- Add rate limiting to authentication endpoints
+- Log authentication failures and suspicious activities
+
+## Customization
+
+This example demonstrates a basic JWT implementation. For real-world use, consider:
+
+1. **Token Storage Options**:
+
+   - HTTP-only cookies (XSS protection)
+   - Authorization header (used in this example)
+   - Stores like zustand for local storage support
+
+2. **Enhanced Security**:
+
+   - CSRF protection
+   - Refresh token mechanism
+   - Token revocation strategy
+
+3. **User Management**:
+   - Role-based access control
+   - Account recovery flows
+   - Email verification
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
