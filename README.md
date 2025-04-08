@@ -47,10 +47,23 @@ docker-compose up -d
 npx prisma migrate dev
 ```
 
-5. Start the development server
+5. Seed the database with test user
+
+```bash
+npx prisma db seed
+```
+
+6. Start the development server
 
 ```bash
 npm run dev
+```
+
+### Test User Credentials
+
+```
+Email: test@gmail.com
+Password: test12345
 ```
 
 ## Usage Example
