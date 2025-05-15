@@ -5,7 +5,7 @@ import { JWTPayload, SignJWT, jwtVerify } from 'jose';
 import { NextRequest } from 'next/server';
 import { HttpStatusCode } from 'axios';
 import { STATUS_CODES } from 'http';
-import prisma from './db';
+import prisma from '@/database/db';
 
 const SECRET_KEY = process.env.SECRET_KEY;
 if (!SECRET_KEY) {
@@ -99,7 +99,8 @@ export async function withAuth(
   handler: (
     req: NextRequest,
     user: Omit<User, 'password'>
-  ) => Promise<NextResponse>
+  ) => Promise<NextResponse>,
+  permissions: string[] = [] // make sure to type safe the permissions - (this is a basic permission)
 ): Promise<NextResponse> {
   const { authenticated, user, error } = await authenticateRequest(req);
 
@@ -112,6 +113,19 @@ export async function withAuth(
       },
       { status: HttpStatusCode.Unauthorized }
     );
+  }
+
+  if (permissions.length > 0) {
+    if (!permissions.includes(user.role)) {
+      return NextResponse.json(
+        {
+          message: 'Permission Denied',
+          status: HttpStatusCode.Forbidden,
+          error: STATUS_CODES[HttpStatusCode.Forbidden],
+        },
+        { status: HttpStatusCode.Forbidden }
+      );
+    }
   }
 
   // Add user to request for use in the handler

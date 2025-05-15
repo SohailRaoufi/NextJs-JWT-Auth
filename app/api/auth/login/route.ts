@@ -1,6 +1,6 @@
+import prisma from '@/database/db';
 import { ApiError, handleApiError, handleZodError } from '@/lib/api-error';
 import { generateToken } from '@/lib/auth';
-import prisma from '@/lib/db';
 import { verifyHash } from '@/lib/hash';
 import { loginSchema } from '@/lib/validations/login.schema';
 import { HttpStatusCode } from 'axios';
