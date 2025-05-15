@@ -2,6 +2,20 @@
 
 A minimal example implementation of JWT authentication in Next.js 15 using the App Router, jose for JWT operations, and Prisma for database access.
 
+## 📚 Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Usage Example](#usage-example)
+  - [Protected API Route with Permissions](#protected-api-route-with-permissions)
+  - [Making Authenticated Requests](#making-authenticated-requests)
+- [Custom Prisma Pagination](#custom-prisma-pagination)
+- [Key Dependencies](#key-dependencies)
+- [Security Recommendations](#security-recommendations)
+- [Customization](#customization)
+- [License](#license)
+- [Contributing](#contributing)
+
 ## Features
 
 - 🔒 JWT authentication using jose
@@ -9,7 +23,8 @@ A minimal example implementation of JWT authentication in Next.js 15 using the A
 - 💾 Prisma integration with accelerate extension
 - 🔑 Secure password hashing with argon2
 - ✅ Request validation with zod
-- 📝 TypeScript support
+- 📜 Role-based access control with permissions
+- 📄 Custom Prisma pagination utility
 
 ## Getting Started
 
@@ -68,7 +83,9 @@ Password: test12345
 
 ## Usage Example
 
-### Protected API Route
+### Protected API Route with Permissions
+
+You can now restrict routes based on roles using the third argument of `withAuth`.
 
 ```typescript
 // app/api/examples/user/route.ts
@@ -78,10 +95,10 @@ import { withAuth } from '@/lib/auth';
 export async function GET(req: NextRequest) {
   return withAuth(req, async (req, user) => {
     return NextResponse.json({
-      message: 'This is a protected endpoint',
+      message: 'This is a protected endpoint for admins only',
       user,
     });
-  });
+  }, ["admin"]); // Only users with 'admin' role can access
 }
 ```
 
@@ -96,6 +113,52 @@ async function fetchProtectedData(token) {
     },
   });
   return response.json();
+}
+```
+
+## Custom Prisma Pagination
+
+This project includes a `findAndPaginate` helper with support for search, sorting, and page metadata.
+
+### Example Usage
+
+```ts
+import { findAndPaginate, getPaginationQuery } from '@/lib/pagination';
+
+export async function GET(req: NextRequest) {
+  const query = getPaginationQuery(req);
+  const [data, meta] = await findAndPaginate(
+    'patient',
+    {
+      orderBy: {
+        createdAt: 'desc',
+      },
+    },
+    {
+      searchable: ['name', 'medicalRecord', 'phoneNumber'],
+      sortable: { createdAt: 'DESC' },
+    },
+    query,
+  );
+
+  return NextResponse.json({ data, meta });
+}
+```
+
+### Example Response
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "currentPage": 1,
+    "itemsPerPage": 10,
+    "totalPages": 5,
+    "totalItems": 50,
+    "filters": {},
+    "sorts": {},
+    "search": ""
+  }
 }
 ```
 
@@ -145,7 +208,7 @@ This example demonstrates a basic JWT implementation. For real-world use, consid
    - Token revocation strategy
 
 3. **User Management**:
-   - Role-based access control
+   - More advanced role-based access control
    - Account recovery flows
    - Email verification
 
